@@ -1,0 +1,21 @@
+import express from 'express';
+import {
+    searchBooks,
+    addBook,
+    getBookDetails,
+    getAllBooks
+} from '../controller/bookController.js';
+import { authenticateToken } from '../middliwares/auth.js';
+
+const router = express.Router();
+
+// Public routes
+router.get('/search', searchBooks);
+router.get('/', getAllBooks);
+router.get('/:id', getBookDetails);
+
+// Protected routes
+router.post('/', authenticateToken, addBook);
+//router.get('/recommendations/user', authenticateToken, getRecommendations);
+
+export default router;

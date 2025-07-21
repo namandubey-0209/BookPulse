@@ -1,0 +1,64 @@
+import mongoose from "mongoose";
+
+const userBookSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  book: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book',
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['want-to-read', 'currently-reading', 'completed', 'did-not-finish'],
+    default: 'want-to-read'
+  },
+
+  // Reading progress
+  progress: { // ✅ Fixed typo: was "progess"
+    pagesRead: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    percentage: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    }
+  },
+
+  // Dates
+  dateAdded: { // ✅ Fixed typo: was "dateAddes"
+    type: Date,
+    default: Date.now
+  },
+  startDate: Date,
+  finishDate: Date,
+
+  // User's personal rating and reviews
+  personalReview: { // ✅ Fixed typo: was "perwsonalReview"
+    content: String,
+    isPublic: {
+      type: Boolean,
+      default: true
+    },
+    dateWritten: Date
+  },
+
+  // Reading sessions for tracking
+  readingSessions: [{
+    date: {
+      type: Date,
+      default: Date.now
+    },
+    pagesRead: Number,
+    timeSpent: Number // ✅ Fixed casing: was "timespent"
+  }]
+}, {
+  timestamps: true
+});
