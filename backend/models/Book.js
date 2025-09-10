@@ -14,7 +14,7 @@ const bookSchema = new mongoose.Schema({
       },
       authors: [{
         name: String,
-        key: String // Open Library author key
+        key: String 
       }],
       isbn: {
         isbn10: String,
@@ -73,4 +73,6 @@ const bookSchema = new mongoose.Schema({
       description: 'text'
     });
     
-    export default mongoose.model('Book', bookSchema);
+    export default mongoose.model('Book', bookSchema);    
+
+  

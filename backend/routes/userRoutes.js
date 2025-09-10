@@ -1,21 +1,32 @@
-import express from 'express';
+import express from 'express'
 import {
-    getUserProfile,
-    updateUserProfile,
-    toggleFollow,
-    getActivityFeed
-} from '../controller/userController.js';
-import { authenticateToken } from '../middliwares/auth.js';
-//import { validateUserUpdate } from '../middleware/validation.js';
+  getUserProfile,
+  updateUserProfile,
+  toggleFollow,
+  getActivityFeed,
+  getFriends,
+  searchUsers,
+  getUserStats,
+  getReadingGoal,
+  updateReadingGoal
+} from '../controller/userController.js'
+import { authenticateToken } from '../middlewares/auth.js'
 
-const router = express.Router();
+const router = express.Router()
 
-// Get user profile (public)
-router.get('/:id', getUserProfile);
+// Public routes
+router.get('/:id', getUserProfile)
+router.get('/:id/friends', getFriends)
+router.get('/search', searchUsers)
 
 // Protected routes
-router.put('/profile', authenticateToken, updateUserProfile);
-router.post('/:id/follow', authenticateToken, toggleFollow);
-router.get('/feed/activity', authenticateToken, getActivityFeed);
+router.use(authenticateToken)
 
-export default router;
+router.put('/profile', updateUserProfile)
+router.post('/:id/follow', toggleFollow)
+router.get('/feed/activity', getActivityFeed)
+router.get('/:id/stats', getUserStats)
+router.get('/:id/reading-goal', getReadingGoal)
+router.put('/reading-goal', updateReadingGoal)
+
+export default router

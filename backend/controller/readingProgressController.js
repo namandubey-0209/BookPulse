@@ -2,31 +2,21 @@ import UserBook from '../models/UserBook.js';
 import Book from '../models/Book.js';
 import mongoose from 'mongoose';
 
-// Start reading a book
 export const startReading = async (req, res) => {
     try {
         const { bookId, totalPages } = req.body;
         const userId = req.user.id;
 
-        // Check if book exists
         const book = await Book.findById(bookId);
-        if (!book) {
-            return res.status(404).json({ message: 'Book not found' });
-        }
+        if (!book) return res.status(404).json({ message: 'Book not found' });
 
-        // Check if progress already exists
-        let progress = await UserBook.findOne({
-            user: userId,
-            book: bookId
-        });
+        let progress = await UserBook.findOne({ user: userId, book: bookId });
 
         if (progress) {
-            // Update existing progress
             progress.status = 'reading';
             progress.startDate = progress.startDate || new Date();
             if (totalPages) progress.totalPages = totalPages;
         } else {
-            // Create new progress
             progress = new UserBook({
                 user: userId,
                 book: bookId,
@@ -39,31 +29,21 @@ export const startReading = async (req, res) => {
         await progress.save();
         await progress.populate('book', 'title authors coverImage');
 
-        res.status(201).json({
-            message: 'Started reading book',
-            progress
-        });
+        res.status(201).json({ message: 'Started reading book', progress });
     } catch (error) {
         res.status(500).json({ message: 'Error starting book', error: error.message });
     }
 };
 
-// Update reading progress
 export const updateProgress = async (req, res) => {
     try {
         const { currentPage, notes, status } = req.body;
         const progressId = req.params.id;
 
-        const progress = await UserBook.findOne({
-            _id: progressId,
-            user: req.user.id
-        }).populate('book', 'title authors');
+        const progress = await UserBook.findOne({ _id: progressId, user: req.user.id }).populate('book', 'title authors');
 
-        if (!progress) {
-            return res.status(404).json({ message: 'Reading progress not found' });
-        }
+        if (!progress) return res.status(404).json({ message: 'Reading progress not found' });
 
-        // Update fields
         if (currentPage !== undefined) progress.currentPage = currentPage;
         if (notes !== undefined) progress.notes = notes;
         if (status !== undefined) {
@@ -75,31 +55,21 @@ export const updateProgress = async (req, res) => {
 
         await progress.save();
 
-        res.json({
-            message: 'Progress updated successfully',
-            progress
-        });
+        res.json({ message: 'Progress updated successfully', progress });
     } catch (error) {
         res.status(500).json({ message: 'Error updating progress', error: error.message });
     }
 };
 
-// Add reading session
 export const addReadingSession = async (req, res) => {
     try {
         const { pagesRead, timeSpent, notes } = req.body;
         const progressId = req.params.id;
 
-        const progress = await UserBook.findOne({
-            _id: progressId,
-            user: req.user.id
-        });
+        const progress = await UserBook.findOne({ _id: progressId, user: req.user.id });
 
-        if (!progress) {
-            return res.status(404).json({ message: 'Reading progress not found' });
-        }
+        if (!progress) return res.status(404).json({ message: 'Reading progress not found' });
 
-        // Add new session
         progress.readingSessions.push({
             date: new Date(),
             pagesRead,
@@ -107,10 +77,8 @@ export const addReadingSession = async (req, res) => {
             notes
         });
 
-        // Update current page
         progress.currentPage += pagesRead;
-        
-        // Update status if finished
+
         if (progress.currentPage >= progress.totalPages && progress.status === 'reading') {
             progress.status = 'finished';
             progress.finishDate = new Date();
@@ -118,16 +86,28 @@ export const addReadingSession = async (req, res) => {
 
         await progress.save();
 
-        res.json({
-            message: 'Reading session added',
-            progress
-        });
+        res.json({ message: 'Reading session added', progress });
     } catch (error) {
         res.status(500).json({ message: 'Error adding session', error: error.message });
     }
 };
 
-// Get user's reading progress
+export const getReadingSessions = async (req, res) => {
+    try {
+        const progressId = req.params.id;
+
+        const progress = await UserBook.findOne({ _id: progressId, user: req.user.id })
+            .select('readingSessions book')
+            .populate('book', 'title authors coverImage');
+
+        if (!progress) return res.status(404).json({ message: 'Reading progress not found' });
+
+        res.json({ book: progress.book, readingSessions: progress.readingSessions });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching reading sessions', error: error.message });
+    }
+};
+
 export const getUserProgress = async (req, res) => {
     try {
         const userId = req.params.userId || req.user.id;
@@ -139,8 +119,8 @@ export const getUserProgress = async (req, res) => {
         const progress = await UserBook.find(query)
             .populate('book', 'title authors coverImage pageCount')
             .sort({ updatedAt: -1 })
-            .limit(limit * 1)
-            .skip((page - 1) * limit);
+            .limit(parseInt(limit))
+            .skip((parseInt(page) - 1) * parseInt(limit));
 
         const total = await UserBook.countDocuments(query);
 
@@ -155,7 +135,6 @@ export const getUserProgress = async (req, res) => {
     }
 };
 
-// Get reading statistics
 export const getReadingStats = async (req, res) => {
     try {
         const userId = req.params.userId || req.user.id;
@@ -180,7 +159,6 @@ export const getReadingStats = async (req, res) => {
             }
         ]);
 
-        // Calculate reading streak
         const recentProgress = await UserBook.find({
             user: userId,
             'readingSessions.0': { $exists: true }
@@ -188,25 +166,20 @@ export const getReadingStats = async (req, res) => {
         .sort({ 'readingSessions.date': -1 })
         .limit(30);
 
-        // Calculate streak logic
         let streak = 0;
         const today = new Date();
         for (let i = 0; i < 30; i++) {
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() - i);
-            
-            const hasReadingOnDate = recentProgress.some(progress => 
-                progress.readingSessions.some(session => {
-                    const sessionDate = new Date(session.date);
-                    return sessionDate.toDateString() === checkDate.toDateString();
-                })
+
+            const hasReadingOnDate = recentProgress.some(progress =>
+                progress.readingSessions.some(session =>
+                    new Date(session.date).toDateString() === checkDate.toDateString()
+                )
             );
-            
-            if (hasReadingOnDate) {
-                streak++;
-            } else if (i > 0) {
-                break;
-            }
+
+            if (hasReadingOnDate) streak++;
+            else if (i > 0) break;
         }
 
         const booksFinished = stats.find(s => s._id === 'finished')?.count || 0;
@@ -226,17 +199,11 @@ export const getReadingStats = async (req, res) => {
     }
 };
 
-// Delete reading progress
 export const deleteProgress = async (req, res) => {
     try {
-        const progress = await UserBook.findOneAndDelete({
-            _id: req.params.id,
-            user: req.user.id
-        });
+        const progress = await UserBook.findOneAndDelete({ _id: req.params.id, user: req.user.id });
 
-        if (!progress) {
-            return res.status(404).json({ message: 'Reading progress not found' });
-        }
+        if (!progress) return res.status(404).json({ message: 'Reading progress not found' });
 
         res.json({ message: 'Reading progress deleted successfully' });
     } catch (error) {

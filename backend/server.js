@@ -4,10 +4,10 @@ import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 
 import authRoutes from './routes/authRoutes.js';
-import bookRoutes from './routes/bookRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import readingProgressRoutes from './routes/readingProgressRoutes.js';
-//import discussionRoutes from './routes/discussions.js';
+import userBookRoutes from './routes/userBookRoutes.js';
+import discussionRoutes from './routes/discussionRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 
 dotenv.config();
@@ -25,11 +25,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Root route
 app.use('/api/auth',authRoutes)
-app.use('/api/books',bookRoutes)
 app.use('/api/users',userRoutes)
-//app.use('/api/reading_progress',readingProgressRoutes)
-//app.use('/api/discussions',discussionRoutes)
+app.use('/api/reading_progress',readingProgressRoutes)
 app.use('/api/reviews',reviewRoutes)
+app.use('/api/user-books', userBookRoutes);
+app.use('/api/discussions', discussionRoutes);
 
 
 // 404 Catch-All route (must be last)

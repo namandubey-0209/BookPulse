@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
   readingGoal: {
     year: {
       type: Number,
-      default: () => new Date().getFullYear() // Use a function to get dynamic default
+      default: () => new Date().getFullYear()
     },
     target: {
       type: Number,

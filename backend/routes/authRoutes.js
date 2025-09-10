@@ -1,19 +1,14 @@
 import express from 'express';
-import { register, login, logout, refreshToken, getCurrentUser } from '../controller/authController.js';
-import { authenticateToken } from '../middliwares/auth.js';
-//import { validateRegister, validateLogin } from '../middleware/validation.js';
-//import { rateLimiter } from '../middleware/rateLimiter.js';
+import { register, login, logout, refreshToken, getCurrentUser, forgotPassword } from '../controller/authController.js';
+import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// Apply rate limiting to auth routes
-//router.use(rateLimiter);
-
-// Public routes
 router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
 router.post('/refresh', refreshToken);
+router.post('/forgot-password', forgotPassword);
 
 // Protected routes
 router.get('/me', authenticateToken, getCurrentUser);

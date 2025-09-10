@@ -6,8 +6,7 @@ import {
     deleteReview,
     toggleLike
 } from '../controller/reviewController.js';
-import { authenticateToken } from '../middliwares/auth.js';
-//import { validateReview } from '../middleware/validation.js';
+import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 

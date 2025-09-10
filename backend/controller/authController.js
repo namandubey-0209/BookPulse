@@ -1,14 +1,13 @@
 // controllers/authController.js
 import User from '../models/User.js';
 import crypto from 'crypto';
-import { generateToken } from '../middliwares/auth.js';
+import { generateToken } from '../middlewares/auth.js';
 // import { sendEmail } from '../utils/emailService.js';
 
 // Register new user
 export const register = async (req, res) => {
     try {
         const { username, email, password, confirmPassword, favoriteGenres } = req.body;
-
         // Validation
         if (!username || !email || !password || !confirmPassword) {
             return res.status(400).json({ 

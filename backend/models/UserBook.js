@@ -67,13 +67,13 @@ const userBookSchema = new mongoose.Schema({
 userBookSchema.index({user : 1 , book : 1}, { unique : true});
 
 //to calculate percentage
-userBookSchema.pre('save',function(next){
-    if(this.book && this.book.pageCount && this.book.pagesRead){
-        this.progress.percentage = Math.min(
-            Math.round(((this.book.pagesRead / this.book.pagesRead) * 100),100),
-        )
-    }
-    next();
-})
+// userBookSchema.pre('save',function(next){
+//     if(this.book && this.book.pageCount && this.book.pagesRead){
+//         this.progress.percentage = Math.min(
+//             Math.round(((this.book.pagesRead / this.book.pagesRead) * 100),100),
+//         )
+//     }
+//     next();
+// })
 
 export default mongoose.model('UserBook',userBookSchema);
